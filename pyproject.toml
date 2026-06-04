@@ -1,7 +1,7 @@
 [project]
 name = "upnote-lens-mcp"
-version = "0.1.0"
-description = "Hybrid MCP server for UpNote — reads via the local SQLite DB, writes via the upnote:// URL scheme."
+version = "0.1.1"
+description = "Let AI read, search, and summarize your UpNote notes — and create new ones — right from your chat."
 readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.10"
