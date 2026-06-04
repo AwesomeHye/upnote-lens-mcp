@@ -1,9 +1,8 @@
 {
   "mcpServers": {
     "upnote-lens": {
-      "command": "upnote-lens-mcp",
-      "args": [],
-      "env": {}
+      "command": "uvx",
+      "args": ["upnote-lens-mcp"]
     }
   }
 }

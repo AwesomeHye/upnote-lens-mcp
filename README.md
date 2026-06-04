@@ -17,17 +17,68 @@ UpNote 노트를 "들여다보는 렌즈" 역할을 하는 하이브리드 MCP �
 - Python 3.10+
 - UpNote 데스크톱 앱 설치 (`com.getupnote.desktop`)
 
-## 설치
+## 설치 & 등록
 
-```bash
-# pipx 권장 (전역 명령으로 설치)
-pipx install git+https://github.com/elsboo/upnote-lens-mcp
+> **🤖 AI에게 맡기기**: MCP 클라이언트(Claude 등)에 [`llms-install.md`](llms-install.md)
+> 링크를 주면 아래 절차를 알아서 실행해 설치까지 해 준다.
 
-# 또는 로컬 클론 후
-pip install -e .
+> 아래 예시는 PyPI 게시를 전제로 한다. **게시 전**에는 `upnote-lens-mcp` 자리에
+> git 소스를 쓴다 — uvx는 `--from git+https://github.com/elsboo/upnote-lens-mcp`,
+> pip은 `git+https://github.com/elsboo/upnote-lens-mcp`.
+
+### 방법 1 — uvx (권장, 사전 설치 불필요)
+
+[uv](https://docs.astral.sh/uv/)만 있으면 별도 설치 단계 없이 바로 실행된다.
+
+Claude Desktop — `~/Library/Application Support/Claude/claude_desktop_config.json`
+(복붙용 예시: [`examples/mcp-config.json`](examples/mcp-config.json)):
+
+```json
+{
+  "mcpServers": {
+    "upnote-lens": {
+      "command": "uvx",
+      "args": ["upnote-lens-mcp"]
+    }
+  }
+}
 ```
 
-설치하면 `upnote-lens-mcp` (별칭 `upnote-lens`) 실행 명령이 생긴다.
+Claude Code:
+
+```bash
+claude mcp add upnote-lens -- uvx upnote-lens-mcp
+```
+
+### 방법 2 — pip
+
+```bash
+pip install upnote-lens-mcp
+```
+
+설치하면 `upnote-lens-mcp`(별칭 `upnote-lens`) 명령이 생긴다.
+
+```json
+{
+  "mcpServers": {
+    "upnote-lens": {
+      "command": "upnote-lens-mcp"
+    }
+  }
+}
+```
+
+Claude Code: `claude mcp add upnote-lens -- upnote-lens-mcp`
+
+> venv에 설치했다면 `command`에 venv의 절대경로(`/path/.venv/bin/upnote-lens-mcp`)를 쓴다.
+
+### 파이썬/pip이 없다면
+
+- 파이썬은 있는데 `pip`이 없으면: `python -m ensurepip --upgrade`
+- 파이썬 자체가 없으면: uv를 설치하고 **방법 1**을 쓴다(파이썬도 uv가 알아서 챙긴다).
+  ```bash
+  curl -LsSf https://astral.sh/uv/install.sh | sh
+  ```
 
 ## 제공 도구
 
@@ -53,35 +104,7 @@ pip install -e .
 
 > **태그 제약**: UpNote의 `note/new` URL 스킴에는 태그 파라미터가 없고, 본문에 `#해시태그`를 넣어도 진짜 태그가 아니라 일반 텍스트로 들어간다(에디터에서 직접 입력할 때만 태그로 변환됨). 노트 생성 후 태그가 필요하면 앱에서 직접 달아야 한다.
 
-## MCP 클라이언트 등록
-
-### Claude Code
-
-```bash
-claude mcp add upnote-lens -- upnote-lens-mcp
-```
-
-### Claude Desktop
-
-`~/Library/Application Support/Claude/claude_desktop_config.json`에 추가
-(전체 예시는 [`examples/mcp-config.json`](examples/mcp-config.json) 참고):
-
-```json
-{
-  "mcpServers": {
-    "upnote-lens": {
-      "command": "upnote-lens-mcp",
-      "args": [],
-      "env": {}
-    }
-  }
-}
-```
-
-> pipx가 아닌 venv에 설치했다면 `command`에 venv의 절대경로를 적는다.
-> 예: `/path/to/upnote-lens-mcp/.venv/bin/upnote-lens-mcp`
-
-### DB 경로 재정의
+## DB 경로 재정의
 
 DB가 기본 위치가 아니면 환경변수로 지정한다.
 
