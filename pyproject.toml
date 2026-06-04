@@ -10,7 +10,7 @@ keywords = ["mcp", "upnote", "notes", "sqlite"]
 dependencies = ["mcp>=1.2.0"]
 
 [project.urls]
-Homepage = "https://github.com/elsboo/upnote-lens-mcp"
+Homepage = "https://github.com/AwesomeHye/upnote-lens-mcp"
 
 [project.scripts]
 upnote-lens-mcp = "upnote_lens.server:main"

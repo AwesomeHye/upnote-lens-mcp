@@ -5,7 +5,7 @@ and register **upnote-lens-mcp** into the user's MCP client. If any step fails,
 stop, tell the user what is blocking you, and wait for instructions. Get the
 user's consent before running external commands or editing config files.
 
-Repository: `https://github.com/elsboo/upnote-lens-mcp`
+Repository: `https://github.com/AwesomeHye/upnote-lens-mcp`
 
 ---
 
@@ -29,7 +29,7 @@ Repository: `https://github.com/elsboo/upnote-lens-mcp`
    (uv brings its own Python, so no separate Python install is needed.)
 
 > If the user already uses pip, `pip install upnote-lens-mcp` (after publish) or
-> `pip install git+https://github.com/elsboo/upnote-lens-mcp` (before publish)
+> `pip install git+https://github.com/AwesomeHye/upnote-lens-mcp` (before publish)
 > also works. In that case register with `command` set to `"upnote-lens-mcp"`.
 
 ## 2. Identify the MCP client
@@ -43,7 +43,7 @@ Repository: `https://github.com/elsboo/upnote-lens-mcp`
 
 The following assumes the package is **published to PyPI**. Before it is
 published, replace the `upnote-lens-mcp` argument with
-`--from git+https://github.com/elsboo/upnote-lens-mcp upnote-lens-mcp`.
+`--from git+https://github.com/AwesomeHye/upnote-lens-mcp upnote-lens-mcp`.
 
 ### 3-A. Claude Code
 
@@ -54,7 +54,7 @@ claude mcp add upnote-lens -- uvx upnote-lens-mcp
 
 Before publish (git source):
 ```bash
-claude mcp add upnote-lens -- uvx --from git+https://github.com/elsboo/upnote-lens-mcp upnote-lens-mcp
+claude mcp add upnote-lens -- uvx --from git+https://github.com/AwesomeHye/upnote-lens-mcp upnote-lens-mcp
 ```
 
 ### 3-B. Claude Desktop
@@ -80,7 +80,7 @@ Before publish (git source):
   "mcpServers": {
     "upnote-lens": {
       "command": "uvx",
-      "args": ["--from", "git+https://github.com/elsboo/upnote-lens-mcp", "upnote-lens-mcp"]
+      "args": ["--from", "git+https://github.com/AwesomeHye/upnote-lens-mcp", "upnote-lens-mcp"]
     }
   }
 }

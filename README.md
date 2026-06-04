@@ -31,8 +31,8 @@ writes to the safer URL scheme.
 
 > The examples below assume the package is published to PyPI. **Before it is
 > published**, replace `upnote-lens-mcp` with the git source — for uvx use
-> `--from git+https://github.com/elsboo/upnote-lens-mcp`, for pip use
-> `git+https://github.com/elsboo/upnote-lens-mcp`.
+> `--from git+https://github.com/AwesomeHye/upnote-lens-mcp`, for pip use
+> `git+https://github.com/AwesomeHye/upnote-lens-mcp`.
 
 ### Option 1 — uvx (recommended, no separate install step)
 
