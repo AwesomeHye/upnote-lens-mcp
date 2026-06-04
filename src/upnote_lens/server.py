@@ -74,21 +74,19 @@ def create_note(
     title: str | None = None,
     content: str | None = None,
     notebook: str | None = None,
-    tags: list[str] | None = None,
     markdown: bool = True,
     new_window: bool = False,
 ) -> dict:
     """Create a new note in UpNote via the URL scheme.
 
-    content is treated as Markdown by default. tags are appended to the body
-    as #hashtags (UpNote has no dedicated tags URL parameter). notebook matches
-    by name. Returns the launched upnote:// URL.
+    content is treated as Markdown by default. notebook matches by name.
+    Tags cannot be set via the URL scheme — tag the note manually in the app.
+    Returns the launched upnote:// URL.
     """
     url = writer.create_note(
         title=title,
         content=content,
         notebook=notebook,
-        tags=tags,
         markdown=markdown,
         new_window=new_window,
     )

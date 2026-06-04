@@ -51,24 +51,18 @@ def create_note(
     title: str | None = None,
     content: str | None = None,
     notebook: str | None = None,
-    tags: list[str] | None = None,
     markdown: bool = True,
     new_window: bool = False,
 ) -> str:
     """Create a note. Returns the upnote:// URL that was launched.
 
-    UpNote's note/new endpoint has no dedicated tags parameter, so tags are
-    appended to the body as ``#hashtags`` (which UpNote turns into tags when
-    markdown is enabled).
+    Note: UpNote's note/new endpoint cannot set tags — there is no tag
+    parameter, and hashtags injected into the body stay as plain text rather
+    than becoming real tags. Tag a note manually in the app afterwards.
     """
-    text = content or ""
-    if tags:
-        hashtags = " ".join(f"#{t.lstrip('#')}" for t in tags if t.strip())
-        text = f"{text}\n\n{hashtags}".strip() if text else hashtags
-
     params: dict[str, object] = {
         "title": title,
-        "text": text,
+        "text": content,
         "notebook": notebook,
         "markdown": markdown,
     }

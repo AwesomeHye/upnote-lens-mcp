@@ -47,9 +47,11 @@ pip install -e .
 
 | 도구 | 설명 |
 |---|---|
-| `create_note(title, content, notebook?, tags?, markdown=True, new_window=False)` | 노트 생성. `content`는 기본 Markdown. `tags`는 본문에 `#해시태그`로 추가됨(URL 스킴에 태그 파라미터가 없음). `notebook`은 이름으로 매칭 |
+| `create_note(title, content, notebook?, markdown=True, new_window=False)` | 노트 생성. `content`는 기본 Markdown. `notebook`은 이름으로 매칭. **태그는 설정 불가**(아래 참고) |
 | `open_note(note_id, new_window=False)` | 기존 노트를 앱에서 열기 |
 | `open_notebook(notebook_id)` | 노트북을 앱에서 열기 |
+
+> **태그 제약**: UpNote의 `note/new` URL 스킴에는 태그 파라미터가 없고, 본문에 `#해시태그`를 넣어도 진짜 태그가 아니라 일반 텍스트로 들어간다(에디터에서 직접 입력할 때만 태그로 변환됨). 노트 생성 후 태그가 필요하면 앱에서 직접 달아야 한다.
 
 ## MCP 클라이언트 등록
 
