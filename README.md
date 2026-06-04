@@ -11,10 +11,99 @@ UpNote 노트를 "들여다보는 렌즈" 역할을 하는 하이브리드 MCP �
 
 기존 upnote-mcp는 URL 스킴만 써서 노트 생성/검색은 되지만 "노트 내용을 읽어 돌려주는 것"이 설계상 불가능하다(검색해도 앱에 결과만 띄울 뿐 텍스트가 안 돌아옴). UpNote는 로컬 SQLite에 본문을 평문 저장하므로, 읽기는 DB 직접 조회로 해결하고 쓰기는 안전하게 URL 스킴에 맡긴다.
 
-## 상태
+## 요구사항
 
-🚧 개발 중. 자세한 사용법/설치/등록 방법은 추후 문서화.
+- macOS (쓰기 도구가 `open`으로 `upnote://` URL을 실행)
+- Python 3.10+
+- UpNote 데스크톱 앱 설치 (`com.getupnote.desktop`)
+
+## 설치
+
+```bash
+# pipx 권장 (전역 명령으로 설치)
+pipx install git+https://github.com/elsboo/upnote-lens-mcp
+
+# 또는 로컬 클론 후
+pip install -e .
+```
+
+설치하면 `upnote-lens-mcp` (별칭 `upnote-lens`) 실행 명령이 생긴다.
+
+## 제공 도구
+
+### 읽기 (로컬 DB 조회 → 실제 텍스트 반환)
+
+| 도구 | 설명 |
+|---|---|
+| `search_notes(query, limit=20)` | 제목/본문 부분일치 검색. id·제목·수정시각·스니펫 반환 |
+| `get_note(note_id, include_html=False)` | 특정 노트의 제목 + 본문 전문 (옵션: 원본 HTML) |
+| `list_recent(limit=20)` | 최근 수정된 노트 목록 |
+| `list_notebooks()` | 노트북 목록 + 노트 개수 + 부모 |
+| `list_notes_in_notebook(notebook_id, limit=50)` | 노트북 안의 노트 |
+| `list_tags()` | 태그 목록 + 노트 개수 |
+| `list_notes_by_tag(tag_title, limit=50)` | 태그가 달린 노트 |
+
+### 쓰기 (`upnote://` URL 스킴)
+
+| 도구 | 설명 |
+|---|---|
+| `create_note(title, content, notebook?, tags?, markdown=True, new_window=False)` | 노트 생성. `content`는 기본 Markdown. `tags`는 본문에 `#해시태그`로 추가됨(URL 스킴에 태그 파라미터가 없음). `notebook`은 이름으로 매칭 |
+| `open_note(note_id, new_window=False)` | 기존 노트를 앱에서 열기 |
+| `open_notebook(notebook_id)` | 노트북을 앱에서 열기 |
+
+## MCP 클라이언트 등록
+
+### Claude Code
+
+```bash
+claude mcp add upnote-lens -- upnote-lens-mcp
+```
+
+### Claude Desktop
+
+`~/Library/Application Support/Claude/claude_desktop_config.json`에 추가
+(전체 예시는 [`examples/mcp-config.json`](examples/mcp-config.json) 참고):
+
+```json
+{
+  "mcpServers": {
+    "upnote-lens": {
+      "command": "upnote-lens-mcp",
+      "args": [],
+      "env": {}
+    }
+  }
+}
+```
+
+> pipx가 아닌 venv에 설치했다면 `command`에 venv의 절대경로를 적는다.
+> 예: `/path/to/upnote-lens-mcp/.venv/bin/upnote-lens-mcp`
+
+### DB 경로 재정의
+
+DB가 기본 위치가 아니면 환경변수로 지정한다.
+
+```
+UPNOTE_LENS_DB=/path/to/upnote.sqlite3
+```
+
+기본 경로:
+`~/Library/Containers/com.getupnote.desktop/Data/Library/Application Support/UpNote/upnote.sqlite3`
+
+## 안전 제약 (설계 원칙)
+
+- **읽기는 절대 원본을 수정하지 않는다.** `mode=ro&immutable=1`로 읽기 전용 연결만 연다(락/WAL 충돌 없음).
+- **DB에 INSERT/UPDATE/DELETE를 하지 않는다.** UpNote는 클라우드 sync를 하므로 DB 직접 쓰기는 sync 손상 위험이 있다. 노트 생성/수정은 전부 URL 스킴 경유.
+
+## 구현 메모 (검증된 사실)
+
+- 유효 노트 필터: `trashed=0 AND deleted=0 AND COALESCE(isTemplate,0)=0`
+  (`isTemplate`은 0이 아니라 NULL이라 `isTemplate=0`으로 거르면 전부 탈락)
+- 타임스탬프는 밀리초 epoch: `datetime(updatedAt/1000,'unixepoch','localtime')`
+- 노트↔노트북 관계는 `notebooks.notes`(노트 id JSON 배열)가 source of truth.
+  `notes.notebookLinks`는 비어 있다.
 
 ## 라이선스
 
 MIT. 자세한 내용은 [LICENSE](LICENSE) 참고.
+쓰기 부분의 URL 스킴 포맷·실행 방식은 chadthornton/upnote-mcp(MIT)에서 차용했다.
