@@ -41,7 +41,10 @@ to register it in Claude.
 
 #### Option 1 — with uv (recommended)
 
-[uv](https://docs.astral.sh/uv/) fetches and runs it on demand — no install step.
+Requires [uv](https://docs.astral.sh/uv/) installed once
+(`brew install uv`, or `curl -LsSf https://astral.sh/uv/install.sh | sh`).
+After that there's **no package install step** — `uvx` downloads, caches, and
+runs upnote-lens-mcp on demand.
 
 Claude Code:
 ```bash
@@ -52,7 +55,7 @@ Claude Desktop:
 { "mcpServers": { "upnote-lens": { "command": "uvx", "args": ["upnote-lens-mcp"] } } }
 ```
 
-#### Option 2 — with pip (no uv)
+#### Option 2 — with pip (if you don't have uv)
 
 ```bash
 pip install upnote-lens-mcp
@@ -67,7 +70,7 @@ Claude Desktop:
 { "mcpServers": { "upnote-lens": { "command": "upnote-lens-mcp" } } }
 ```
 
-#### Option 3 — from GitHub over HTTPS (no pip)
+#### Option 3 — from GitHub over HTTPS (if you don't have pip)
 
 When you can't use PyPI/pip, install straight from the repo with uv. (No uv yet?
 `curl -LsSf https://astral.sh/uv/install.sh | sh`.)
