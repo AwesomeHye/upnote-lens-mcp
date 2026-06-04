@@ -10,6 +10,7 @@ URL formats and the launch approach are adapted from chadthornton/upnote-mcp
 
 from __future__ import annotations
 
+import os
 import platform
 import subprocess
 from urllib.parse import quote, urlencode
@@ -34,13 +35,19 @@ def _build_url(base: str, params: dict) -> str:
 
 def _open_url(url: str) -> str:
     """Hand the URL to the OS so UpNote's scheme handler picks it up."""
-    if platform.system() != "Darwin":
+    system = platform.system()
+    if system == "Darwin":
+        # Pass the URL as a separate argv entry (no shell) — it is already
+        # percent-encoded, so there is nothing for a shell to misinterpret.
+        subprocess.run(["open", url], check=True)
+    elif system == "Windows":
+        # os.startfile routes the URL through the registered scheme handler.
+        os.startfile(url)  # type: ignore[attr-defined]  # Windows-only
+    else:
         raise RuntimeError(
-            "Launching upnote:// URLs is only supported on macOS (uses `open`)."
+            f"Launching upnote:// URLs is not supported on {system}; "
+            "only macOS and Windows are supported."
         )
-    # Pass the URL as a separate argv entry (no shell) — it is already
-    # percent-encoded, so there is nothing for a shell to misinterpret.
-    subprocess.run(["open", url], check=True)
     return url
 
 

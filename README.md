@@ -1,45 +1,69 @@
 # upnote-lens-mcp
 
-A hybrid MCP server that acts as a "lens" into your UpNote notes.
+A hybrid MCP server that lets your AI assistant work with your UpNote notes:
 
-- **Read** — queries the local UpNote SQLite database **read-only** and returns
-  the actual note text, so search and content reads come back as real text.
-- **Write** — note creation and navigation go through the `upnote://` URL scheme
-  (x-callback-url). It never writes to the database.
+- **🔍 Find & search** notes by keyword across titles and bodies.
+- **📖 Read & summarize** — it returns the *actual note text*, so the AI can
+  summarize, analyze, or answer questions about what you've written.
+- **✍️ Create** new notes from the chat.
+
+Under the hood: reads come from the local UpNote SQLite database (**read-only**),
+so real content comes back as text; writes go through the `upnote://` URL scheme
+(x-callback-url) and **never touch the database**.
 
 > The write side (URL scheme) is based on [chadthornton/upnote-mcp](https://github.com/chadthornton/upnote-mcp) (MIT).
 
-## Why combine the two
-
-The original upnote-mcp only uses the URL scheme, so it can create and search
-notes but cannot return note content — searching just opens results in the app,
-no text comes back. UpNote stores note bodies as plain text in a local SQLite
-database, so this project reads directly from there for content, and leaves
-writes to the safer URL scheme.
-
 ## Requirements
 
-- macOS (the write tools launch `upnote://` via `open`)
-- Python 3.10+
-- UpNote desktop app installed (`com.getupnote.desktop`)
+- **macOS** — fully supported and verified.
+- **Windows** — best-effort. URLs launch through the registered scheme handler,
+  and the default DB path is guessed under `%APPDATA%\UpNote\`. This path is
+  **not verified** by the author — if reads fail, set `UPNOTE_LENS_DB` (see below).
+- Python 3.10+ (or just [uv](https://docs.astral.sh/uv/), which brings its own).
+- UpNote desktop app installed.
 
 ## Install & register
 
-> **🤖 Let AI do it**: give your MCP client (Claude, etc.) a link to
-> [`llms-install.md`](llms-install.md) and it will follow the steps and install
-> this for you.
+### 🤖 Let AI install it (easiest)
+
+Give your MCP client (Claude, etc.) a link to
+[`llms-install.md`](llms-install.md) and it will run the steps and set everything
+up for you.
+
+### 🧑 Install it yourself
 
 > The examples below assume the package is published to PyPI. **Before it is
 > published**, replace `upnote-lens-mcp` with the git source — for uvx use
 > `--from git+https://github.com/AwesomeHye/upnote-lens-mcp`, for pip use
 > `git+https://github.com/AwesomeHye/upnote-lens-mcp`.
 
-### Option 1 — uvx (recommended, no separate install step)
+**Option 1 — uvx (recommended, no separate install step)**
 
 With [uv](https://docs.astral.sh/uv/) present, it runs without an install step.
+Use this command in your client config: `uvx upnote-lens-mcp`.
 
-Claude Desktop — `~/Library/Application Support/Claude/claude_desktop_config.json`
-(copy-paste example: [`examples/mcp-config.json`](examples/mcp-config.json)):
+**Option 2 — pip**
+
+```bash
+pip install upnote-lens-mcp
+```
+
+This installs the `upnote-lens-mcp` command (alias `upnote-lens`).
+No Python/pip? Either run `python -m ensurepip --upgrade`, or install uv and use
+Option 1 (`curl -LsSf https://astral.sh/uv/install.sh | sh`).
+
+#### Register with Claude Code
+
+```bash
+claude mcp add upnote-lens -- uvx upnote-lens-mcp
+```
+
+#### Register with Claude Desktop
+
+Edit the config file (copy-paste example: [`examples/mcp-config.json`](examples/mcp-config.json)):
+
+- macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- Windows: `%APPDATA%\Claude\claude_desktop_config.json`
 
 ```json
 {
@@ -52,42 +76,8 @@ Claude Desktop — `~/Library/Application Support/Claude/claude_desktop_config.j
 }
 ```
 
-Claude Code:
-
-```bash
-claude mcp add upnote-lens -- uvx upnote-lens-mcp
-```
-
-### Option 2 — pip
-
-```bash
-pip install upnote-lens-mcp
-```
-
-This installs the `upnote-lens-mcp` command (alias `upnote-lens`).
-
-```json
-{
-  "mcpServers": {
-    "upnote-lens": {
-      "command": "upnote-lens-mcp"
-    }
-  }
-}
-```
-
-Claude Code: `claude mcp add upnote-lens -- upnote-lens-mcp`
-
-> If you installed into a venv, set `command` to the venv's absolute path
-> (`/path/.venv/bin/upnote-lens-mcp`).
-
-### If you don't have Python/pip
-
-- Python but no `pip`: `python -m ensurepip --upgrade`
-- No Python at all: install uv and use **Option 1** (uv brings its own Python).
-  ```bash
-  curl -LsSf https://astral.sh/uv/install.sh | sh
-  ```
+(For pip installs, set `"command": "upnote-lens-mcp"` and drop `args`. If you
+installed into a venv, use the venv's absolute path to the binary.)
 
 ## Tools
 
@@ -118,14 +108,16 @@ Claude Code: `claude mcp add upnote-lens -- upnote-lens-mcp`
 
 ## Override the DB path
 
-If the database isn't in the default location, set an environment variable.
+If the database isn't in the default location (or you're on Windows), point at it
+with an environment variable:
 
 ```
 UPNOTE_LENS_DB=/path/to/upnote.sqlite3
 ```
 
-Default path:
-`~/Library/Containers/com.getupnote.desktop/Data/Library/Application Support/UpNote/upnote.sqlite3`
+Default paths:
+- macOS: `~/Library/Containers/com.getupnote.desktop/Data/Library/Application Support/UpNote/upnote.sqlite3`
+- Windows (best guess): `%APPDATA%\UpNote\upnote.sqlite3`
 
 ## Safety constraints (design principles)
 
@@ -134,14 +126,6 @@ Default path:
 - **No INSERT/UPDATE/DELETE on the DB.** UpNote syncs to the cloud, so writing
   to the DB directly risks breaking sync. All note creation/edits go through the
   URL scheme.
-
-## Implementation notes (verified facts)
-
-- Valid-note filter: `trashed=0 AND deleted=0 AND COALESCE(isTemplate,0)=0`
-  (`isTemplate` is NULL rather than 0, so `isTemplate=0` would drop everything).
-- Timestamps are millisecond epochs: `datetime(updatedAt/1000,'unixepoch','localtime')`.
-- The note↔notebook relationship lives in `notebooks.notes` (a JSON array of note
-  ids) as the source of truth. `notes.notebookLinks` is empty.
 
 ## License
 

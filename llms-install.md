@@ -11,13 +11,12 @@ Repository: `https://github.com/AwesomeHye/upnote-lens-mcp`
 
 ## 0. Preconditions (stop if not met)
 
-1. **Is the OS macOS?** (`uname` → `Darwin`)
-   - If not, stop: the write tools launch `upnote://` via the macOS `open`
-     command, so this is macOS-only.
+1. **OS**: macOS (fully supported) or Windows (best-effort). Stop on anything else.
 2. **Is the UpNote desktop app installed?**
-   - Check: `ls -d "$HOME/Library/Containers/com.getupnote.desktop"`
-   - DB file: `~/Library/Containers/com.getupnote.desktop/Data/Library/Application Support/UpNote/upnote.sqlite3`
-   - If missing, stop and tell the user to install UpNote.
+   - macOS DB: `~/Library/Containers/com.getupnote.desktop/Data/Library/Application Support/UpNote/upnote.sqlite3`
+   - Windows DB (best guess, unverified): `%APPDATA%\UpNote\upnote.sqlite3`
+   - If the app/DB isn't found, stop and tell the user to install UpNote (or set
+     `UPNOTE_LENS_DB` to the real DB path, especially on Windows).
 
 ## 1. Get a runner (uv) — recommended path
 

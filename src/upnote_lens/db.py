@@ -17,16 +17,11 @@ from __future__ import annotations
 
 import json
 import os
+import platform
 import sqlite3
 from contextlib import contextmanager
 from pathlib import Path
 from urllib.parse import quote
-
-DEFAULT_DB_PATH = (
-    Path.home()
-    / "Library/Containers/com.getupnote.desktop/Data/Library/Application Support"
-    / "UpNote/upnote.sqlite3"
-)
 
 # A valid, user-facing note: not trashed, not deleted, not a template.
 VALID_NOTE = "trashed = 0 AND deleted = 0 AND COALESCE(isTemplate, 0) = 0"
@@ -35,10 +30,27 @@ VALID_NOTE = "trashed = 0 AND deleted = 0 AND COALESCE(isTemplate, 0) = 0"
 _UPDATED_AT = "datetime(updatedAt / 1000, 'unixepoch', 'localtime')"
 
 
+def _default_db_path() -> Path:
+    """Best-effort default DB location per OS.
+
+    macOS is verified. The Windows path is a best guess (UpNote is an Electron
+    app, so its data lives under %APPDATA%) and is NOT verified — if it's wrong,
+    set UPNOTE_LENS_DB explicitly.
+    """
+    if platform.system() == "Windows":
+        appdata = os.environ.get("APPDATA") or str(Path.home() / "AppData/Roaming")
+        return Path(appdata) / "UpNote" / "upnote.sqlite3"
+    return (
+        Path.home()
+        / "Library/Containers/com.getupnote.desktop/Data/Library/Application Support"
+        / "UpNote/upnote.sqlite3"
+    )
+
+
 def db_path() -> Path:
     """Resolve the DB path, allowing an override via UPNOTE_LENS_DB."""
     override = os.environ.get("UPNOTE_LENS_DB")
-    return Path(override).expanduser() if override else DEFAULT_DB_PATH
+    return Path(override).expanduser() if override else _default_db_path()
 
 
 @contextmanager
