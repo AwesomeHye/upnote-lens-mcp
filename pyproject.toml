@@ -1,6 +1,6 @@
 [project]
 name = "upnote-lens-mcp"
-version = "0.1.1"
+version = "0.1.2"
 description = "Let AI read, search, and summarize your UpNote notes — and create new ones — right from your chat."
 readme = "README.md"
 license = { file = "LICENSE" }

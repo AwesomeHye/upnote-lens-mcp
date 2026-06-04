@@ -1,5 +1,7 @@
 # upnote-lens-mcp
 
+<!-- mcp-name: io.github.AwesomeHye/upnote-lens-mcp -->
+
 A hybrid MCP server that lets your AI assistant work with your UpNote notes:
 
 - **🔍 Find & search** notes by keyword across titles and bodies.
