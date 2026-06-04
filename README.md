@@ -32,52 +32,54 @@ up for you.
 
 ### 🧑 Install it yourself
 
-> The examples below assume the package is published to PyPI. **Before it is
-> published**, replace `upnote-lens-mcp` with the git source — for uvx use
-> `--from git+https://github.com/AwesomeHye/upnote-lens-mcp`, for pip use
-> `git+https://github.com/AwesomeHye/upnote-lens-mcp`.
+Pick the first option that fits what you already have. Each option includes how
+to register it in Claude.
 
-**Option 1 — uvx (recommended, no separate install step)**
+> **Claude Desktop config file** (referenced in each option):
+> - macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
+> - Windows: `%APPDATA%\Claude\claude_desktop_config.json`
 
-With [uv](https://docs.astral.sh/uv/) present, it runs without an install step.
-Use this command in your client config: `uvx upnote-lens-mcp`.
+#### Option 1 — with uv (recommended)
 
-**Option 2 — pip**
+[uv](https://docs.astral.sh/uv/) fetches and runs it on demand — no install step.
+
+Claude Code:
+```bash
+claude mcp add upnote-lens -- uvx upnote-lens-mcp
+```
+Claude Desktop:
+```json
+{ "mcpServers": { "upnote-lens": { "command": "uvx", "args": ["upnote-lens-mcp"] } } }
+```
+
+#### Option 2 — with pip (no uv)
 
 ```bash
 pip install upnote-lens-mcp
 ```
 
-This installs the `upnote-lens-mcp` command (alias `upnote-lens`).
-No Python/pip? Either run `python -m ensurepip --upgrade`, or install uv and use
-Option 1 (`curl -LsSf https://astral.sh/uv/install.sh | sh`).
-
-#### Register with Claude Code
-
+Claude Code:
 ```bash
-claude mcp add upnote-lens -- uvx upnote-lens-mcp
+claude mcp add upnote-lens -- upnote-lens-mcp
 ```
-
-#### Register with Claude Desktop
-
-Edit the config file (copy-paste example: [`examples/mcp-config.json`](examples/mcp-config.json)):
-
-- macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
-- Windows: `%APPDATA%\Claude\claude_desktop_config.json`
-
+Claude Desktop:
 ```json
-{
-  "mcpServers": {
-    "upnote-lens": {
-      "command": "uvx",
-      "args": ["upnote-lens-mcp"]
-    }
-  }
-}
+{ "mcpServers": { "upnote-lens": { "command": "upnote-lens-mcp" } } }
 ```
 
-(For pip installs, set `"command": "upnote-lens-mcp"` and drop `args`. If you
-installed into a venv, use the venv's absolute path to the binary.)
+#### Option 3 — from GitHub over HTTPS (no pip)
+
+When you can't use PyPI/pip, install straight from the repo with uv. (No uv yet?
+`curl -LsSf https://astral.sh/uv/install.sh | sh`.)
+
+Claude Code:
+```bash
+claude mcp add upnote-lens -- uvx --from git+https://github.com/AwesomeHye/upnote-lens-mcp upnote-lens-mcp
+```
+Claude Desktop:
+```json
+{ "mcpServers": { "upnote-lens": { "command": "uvx", "args": ["--from", "git+https://github.com/AwesomeHye/upnote-lens-mcp", "upnote-lens-mcp"] } } }
+```
 
 ## Tools
 

@@ -27,9 +27,8 @@ Repository: `https://github.com/AwesomeHye/upnote-lens-mcp`
    ```
    (uv brings its own Python, so no separate Python install is needed.)
 
-> If the user already uses pip, `pip install upnote-lens-mcp` (after publish) or
-> `pip install git+https://github.com/AwesomeHye/upnote-lens-mcp` (before publish)
-> also works. In that case register with `command` set to `"upnote-lens-mcp"`.
+> If the user already uses pip, `pip install upnote-lens-mcp` also works. In that
+> case register with `command` set to `"upnote-lens-mcp"`.
 
 ## 2. Identify the MCP client
 
@@ -40,20 +39,10 @@ Repository: `https://github.com/AwesomeHye/upnote-lens-mcp`
 
 ## 3. Register
 
-The following assumes the package is **published to PyPI**. Before it is
-published, replace the `upnote-lens-mcp` argument with
-`--from git+https://github.com/AwesomeHye/upnote-lens-mcp upnote-lens-mcp`.
-
 ### 3-A. Claude Code
 
-After publish:
 ```bash
 claude mcp add upnote-lens -- uvx upnote-lens-mcp
-```
-
-Before publish (git source):
-```bash
-claude mcp add upnote-lens -- uvx --from git+https://github.com/AwesomeHye/upnote-lens-mcp upnote-lens-mcp
 ```
 
 ### 3-B. Claude Desktop
@@ -61,7 +50,6 @@ claude mcp add upnote-lens -- uvx --from git+https://github.com/AwesomeHye/upnot
 Read `claude_desktop_config.json` and **merge** into `mcpServers` (preserve
 existing entries, do not overwrite). Create the file if it doesn't exist.
 
-After publish:
 ```json
 {
   "mcpServers": {
@@ -73,19 +61,11 @@ After publish:
 }
 ```
 
-Before publish (git source):
-```json
-{
-  "mcpServers": {
-    "upnote-lens": {
-      "command": "uvx",
-      "args": ["--from", "git+https://github.com/AwesomeHye/upnote-lens-mcp", "upnote-lens-mcp"]
-    }
-  }
-}
-```
-
 After editing, tell the user to restart Claude Desktop.
+
+> **If PyPI is unavailable** (e.g. installing the latest from source), swap the
+> `upnote-lens-mcp` argument for
+> `--from git+https://github.com/AwesomeHye/upnote-lens-mcp upnote-lens-mcp`.
 
 ## 4. (Optional) Override the DB path
 
@@ -101,8 +81,7 @@ For Claude Code: `claude mcp add ... -e UPNOTE_LENS_DB=/path/to/upnote.sqlite3`
 - Once the tools are connected, call `list_recent(limit=3)` or
   `search_notes("test", 3)` and confirm real note text comes back.
 - If the tools don't show up: check whether the client was restarted, look for
-  typos in `command`/`args`, confirm uv is installed, and (before publish) verify
-  the git source form.
+  typos in `command`/`args`, and confirm uv is installed.
 
 When done, briefly tell the user about the available tools (7 read + 3 write) and
 note that writes launch the app to create/open notes.
