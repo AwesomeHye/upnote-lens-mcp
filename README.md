@@ -13,6 +13,20 @@ so real content comes back as text; writes go through the `upnote://` URL scheme
 
 > The write side (URL scheme) is based on [chadthornton/upnote-mcp](https://github.com/chadthornton/upnote-mcp) (MIT).
 
+## Usage
+
+Once it's registered, just talk to your AI assistant in plain language — it
+picks the right tool for you. No commands or syntax to memorize. For example:
+
+- "Summarize my UpNote notes about the Q3 roadmap."
+- "Find notes where I mentioned Postgres tuning and pull out the key points."
+- "What did I write about onboarding last month?"
+- "Show me my 5 most recent notes."
+- "Create a note titled 'Standup 6/4' with today's three priorities."
+
+Reading, searching, summarizing, and creating all happen through natural
+conversation.
+
 ## Requirements
 
 - **macOS** — fully supported and verified.
