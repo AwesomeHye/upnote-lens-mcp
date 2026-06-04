@@ -1,0 +1,20 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.AwesomeHye/upnote-lens-mcp",
+  "description": "Read, search, and summarize your UpNote notes — and create new ones.",
+  "repository": {
+    "url": "https://github.com/AwesomeHye/upnote-lens-mcp",
+    "source": "github"
+  },
+  "version": "0.1.2",
+  "packages": [
+    {
+      "registryType": "pypi",
+      "identifier": "upnote-lens-mcp",
+      "version": "0.1.2",
+      "transport": {
+        "type": "stdio"
+      }
+    }
+  ]
+}
