@@ -1,37 +1,45 @@
 # upnote-lens-mcp
 
-UpNote 노트를 "들여다보는 렌즈" 역할을 하는 하이브리드 MCP 서버.
+A hybrid MCP server that acts as a "lens" into your UpNote notes.
 
-- **읽기** — 로컬 UpNote SQLite DB를 **읽기 전용**으로 직접 조회해서 노트 본문/검색 결과를 실제 텍스트로 돌려준다.
-- **쓰기** — 노트 생성/열기는 `upnote://` URL 스킴(x-callback-url)으로 처리한다. DB에는 절대 쓰지 않는다.
+- **Read** — queries the local UpNote SQLite database **read-only** and returns
+  the actual note text, so search and content reads come back as real text.
+- **Write** — note creation and navigation go through the `upnote://` URL scheme
+  (x-callback-url). It never writes to the database.
 
-> 쓰기(URL scheme) 부분은 [chadthornton/upnote-mcp](https://github.com/chadthornton/upnote-mcp) (MIT) 기반.
+> The write side (URL scheme) is based on [chadthornton/upnote-mcp](https://github.com/chadthornton/upnote-mcp) (MIT).
 
-## 왜 둘을 합쳤나
+## Why combine the two
 
-기존 upnote-mcp는 URL 스킴만 써서 노트 생성/검색은 되지만 "노트 내용을 읽어 돌려주는 것"이 설계상 불가능하다(검색해도 앱에 결과만 띄울 뿐 텍스트가 안 돌아옴). UpNote는 로컬 SQLite에 본문을 평문 저장하므로, 읽기는 DB 직접 조회로 해결하고 쓰기는 안전하게 URL 스킴에 맡긴다.
+The original upnote-mcp only uses the URL scheme, so it can create and search
+notes but cannot return note content — searching just opens results in the app,
+no text comes back. UpNote stores note bodies as plain text in a local SQLite
+database, so this project reads directly from there for content, and leaves
+writes to the safer URL scheme.
 
-## 요구사항
+## Requirements
 
-- macOS (쓰기 도구가 `open`으로 `upnote://` URL을 실행)
+- macOS (the write tools launch `upnote://` via `open`)
 - Python 3.10+
-- UpNote 데스크톱 앱 설치 (`com.getupnote.desktop`)
+- UpNote desktop app installed (`com.getupnote.desktop`)
 
-## 설치 & 등록
+## Install & register
 
-> **🤖 AI에게 맡기기**: MCP 클라이언트(Claude 등)에 [`llms-install.md`](llms-install.md)
-> 링크를 주면 아래 절차를 알아서 실행해 설치까지 해 준다.
+> **🤖 Let AI do it**: give your MCP client (Claude, etc.) a link to
+> [`llms-install.md`](llms-install.md) and it will follow the steps and install
+> this for you.
 
-> 아래 예시는 PyPI 게시를 전제로 한다. **게시 전**에는 `upnote-lens-mcp` 자리에
-> git 소스를 쓴다 — uvx는 `--from git+https://github.com/elsboo/upnote-lens-mcp`,
-> pip은 `git+https://github.com/elsboo/upnote-lens-mcp`.
+> The examples below assume the package is published to PyPI. **Before it is
+> published**, replace `upnote-lens-mcp` with the git source — for uvx use
+> `--from git+https://github.com/elsboo/upnote-lens-mcp`, for pip use
+> `git+https://github.com/elsboo/upnote-lens-mcp`.
 
-### 방법 1 — uvx (권장, 사전 설치 불필요)
+### Option 1 — uvx (recommended, no separate install step)
 
-[uv](https://docs.astral.sh/uv/)만 있으면 별도 설치 단계 없이 바로 실행된다.
+With [uv](https://docs.astral.sh/uv/) present, it runs without an install step.
 
 Claude Desktop — `~/Library/Application Support/Claude/claude_desktop_config.json`
-(복붙용 예시: [`examples/mcp-config.json`](examples/mcp-config.json)):
+(copy-paste example: [`examples/mcp-config.json`](examples/mcp-config.json)):
 
 ```json
 {
@@ -50,13 +58,13 @@ Claude Code:
 claude mcp add upnote-lens -- uvx upnote-lens-mcp
 ```
 
-### 방법 2 — pip
+### Option 2 — pip
 
 ```bash
 pip install upnote-lens-mcp
 ```
 
-설치하면 `upnote-lens-mcp`(별칭 `upnote-lens`) 명령이 생긴다.
+This installs the `upnote-lens-mcp` command (alias `upnote-lens`).
 
 ```json
 {
@@ -70,65 +78,73 @@ pip install upnote-lens-mcp
 
 Claude Code: `claude mcp add upnote-lens -- upnote-lens-mcp`
 
-> venv에 설치했다면 `command`에 venv의 절대경로(`/path/.venv/bin/upnote-lens-mcp`)를 쓴다.
+> If you installed into a venv, set `command` to the venv's absolute path
+> (`/path/.venv/bin/upnote-lens-mcp`).
 
-### 파이썬/pip이 없다면
+### If you don't have Python/pip
 
-- 파이썬은 있는데 `pip`이 없으면: `python -m ensurepip --upgrade`
-- 파이썬 자체가 없으면: uv를 설치하고 **방법 1**을 쓴다(파이썬도 uv가 알아서 챙긴다).
+- Python but no `pip`: `python -m ensurepip --upgrade`
+- No Python at all: install uv and use **Option 1** (uv brings its own Python).
   ```bash
   curl -LsSf https://astral.sh/uv/install.sh | sh
   ```
 
-## 제공 도구
+## Tools
 
-### 읽기 (로컬 DB 조회 → 실제 텍스트 반환)
+### Read (queries the local DB → returns real text)
 
-| 도구 | 설명 |
+| Tool | Description |
 |---|---|
-| `search_notes(query, limit=20)` | 제목/본문 부분일치 검색. id·제목·수정시각·스니펫 반환 |
-| `get_note(note_id, include_html=False)` | 특정 노트의 제목 + 본문 전문 (옵션: 원본 HTML) |
-| `list_recent(limit=20)` | 최근 수정된 노트 목록 |
-| `list_notebooks()` | 노트북 목록 + 노트 개수 + 부모 |
-| `list_notes_in_notebook(notebook_id, limit=50)` | 노트북 안의 노트 |
-| `list_tags()` | 태그 목록 + 노트 개수 |
-| `list_notes_by_tag(tag_title, limit=50)` | 태그가 달린 노트 |
+| `search_notes(query, limit=20)` | Substring search over title/body. Returns id, title, updated time, snippet |
+| `get_note(note_id, include_html=False)` | Full title + body text of a note (optionally raw HTML) |
+| `list_recent(limit=20)` | Most recently updated notes |
+| `list_notebooks()` | Notebooks with note counts and parent |
+| `list_notes_in_notebook(notebook_id, limit=50)` | Notes inside a notebook |
+| `list_tags()` | Tags with note counts |
+| `list_notes_by_tag(tag_title, limit=50)` | Notes carrying a tag |
 
-### 쓰기 (`upnote://` URL 스킴)
+### Write (`upnote://` URL scheme)
 
-| 도구 | 설명 |
+| Tool | Description |
 |---|---|
-| `create_note(title, content, notebook?, markdown=True, new_window=False)` | 노트 생성. `content`는 기본 Markdown. `notebook`은 이름으로 매칭. **태그는 설정 불가**(아래 참고) |
-| `open_note(note_id, new_window=False)` | 기존 노트를 앱에서 열기 |
-| `open_notebook(notebook_id)` | 노트북을 앱에서 열기 |
+| `create_note(title, content, notebook?, markdown=True, new_window=False)` | Create a note. `content` is Markdown by default. `notebook` matches by name. **Tags can't be set** (see below) |
+| `open_note(note_id, new_window=False)` | Open an existing note in the app |
+| `open_notebook(notebook_id)` | Open a notebook in the app |
 
-> **태그 제약**: UpNote의 `note/new` URL 스킴에는 태그 파라미터가 없고, 본문에 `#해시태그`를 넣어도 진짜 태그가 아니라 일반 텍스트로 들어간다(에디터에서 직접 입력할 때만 태그로 변환됨). 노트 생성 후 태그가 필요하면 앱에서 직접 달아야 한다.
+> **Tag limitation**: UpNote's `note/new` URL scheme has no tag parameter, and
+> hashtags placed in the body stay as plain text rather than becoming real tags
+> (they only convert to tags when typed in the editor). If you need tags, add
+> them manually in the app after the note is created.
 
-## DB 경로 재정의
+## Override the DB path
 
-DB가 기본 위치가 아니면 환경변수로 지정한다.
+If the database isn't in the default location, set an environment variable.
 
 ```
 UPNOTE_LENS_DB=/path/to/upnote.sqlite3
 ```
 
-기본 경로:
+Default path:
 `~/Library/Containers/com.getupnote.desktop/Data/Library/Application Support/UpNote/upnote.sqlite3`
 
-## 안전 제약 (설계 원칙)
+## Safety constraints (design principles)
 
-- **읽기는 절대 원본을 수정하지 않는다.** `mode=ro&immutable=1`로 읽기 전용 연결만 연다(락/WAL 충돌 없음).
-- **DB에 INSERT/UPDATE/DELETE를 하지 않는다.** UpNote는 클라우드 sync를 하므로 DB 직접 쓰기는 sync 손상 위험이 있다. 노트 생성/수정은 전부 URL 스킴 경유.
+- **Reads never modify the original.** Only a read-only connection is opened
+  (`mode=ro&immutable=1`), so there is no lock/WAL conflict.
+- **No INSERT/UPDATE/DELETE on the DB.** UpNote syncs to the cloud, so writing
+  to the DB directly risks breaking sync. All note creation/edits go through the
+  URL scheme.
 
-## 구현 메모 (검증된 사실)
+## Implementation notes (verified facts)
 
-- 유효 노트 필터: `trashed=0 AND deleted=0 AND COALESCE(isTemplate,0)=0`
-  (`isTemplate`은 0이 아니라 NULL이라 `isTemplate=0`으로 거르면 전부 탈락)
-- 타임스탬프는 밀리초 epoch: `datetime(updatedAt/1000,'unixepoch','localtime')`
-- 노트↔노트북 관계는 `notebooks.notes`(노트 id JSON 배열)가 source of truth.
-  `notes.notebookLinks`는 비어 있다.
+- Valid-note filter: `trashed=0 AND deleted=0 AND COALESCE(isTemplate,0)=0`
+  (`isTemplate` is NULL rather than 0, so `isTemplate=0` would drop everything).
+- Timestamps are millisecond epochs: `datetime(updatedAt/1000,'unixepoch','localtime')`.
+- The note↔notebook relationship lives in `notebooks.notes` (a JSON array of note
+  ids) as the source of truth. `notes.notebookLinks` is empty.
 
-## 라이선스
+## License
 
-MIT. 자세한 내용은 [LICENSE](LICENSE) 참고.
-쓰기 부분의 URL 스킴 포맷·실행 방식은 chadthornton/upnote-mcp(MIT)에서 차용했다.
+MIT. See [LICENSE](LICENSE) for details.
+The URL-scheme formats and launch approach on the write side are adapted from
+chadthornton/upnote-mcp (MIT).
