@@ -138,14 +138,6 @@ Default paths:
 - macOS: `~/Library/Containers/com.getupnote.desktop/Data/Library/Application Support/UpNote/upnote.sqlite3`
 - Windows (best guess): `%APPDATA%\UpNote\upnote.sqlite3`
 
-## Safety constraints (design principles)
-
-- **Reads never modify the original.** Only a read-only connection is opened
-  (`mode=ro&immutable=1`), so there is no lock/WAL conflict.
-- **No INSERT/UPDATE/DELETE on the DB.** UpNote syncs to the cloud, so writing
-  to the DB directly risks breaking sync. All note creation/edits go through the
-  URL scheme.
-
 ## License
 
 MIT. See [LICENSE](LICENSE) for details.
